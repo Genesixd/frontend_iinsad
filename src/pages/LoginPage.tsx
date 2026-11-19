@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { ArrowRight, FlaskConical, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { ROLES, ROLE_CODES, type RoleCode } from '../config/roles'
+import logo from '../assets/logo-iinsad.jpg'
 
 const DEMO_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO === 'true'
 
@@ -37,7 +38,7 @@ export function LoginPage() {
 
   return <div className="login-layout">
     <section className="login-art">
-      <div className="login-art-top"><span className="art-logo">I</span><span>IINSAD <span className="subtle">/ UMSA</span></span></div>
+      <div className="login-art-top"><img className="logo-img logo-img--login" src={logo} alt="Logo del IINSAD"/><span>IINSAD <span className="subtle">/ UMSA</span></span></div>
       <div className="login-art-content"><div className="art-icon"><FlaskConical size={30}/></div><p className="eyebrow">PLATAFORMA INSTITUCIONAL</p><h1>La investigación avanza con información organizada.</h1><p>Gestión, planificación y seguimiento de proyectos de investigación en un solo espacio.</p><div className="art-divider"/><div className="art-highlights"><span>01 · Transparencia</span><span>02 · Seguimiento</span><span>03 · Trazabilidad</span></div></div>
       <div className="login-art-bottom">Instituto de Investigación en Salud y Desarrollo<br/>Universidad Mayor de San Andrés</div>
     </section>

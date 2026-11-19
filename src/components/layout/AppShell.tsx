@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import { menuForRole } from '../../config/navigation'
 import { ROLES, type RoleCode } from '../../config/roles'
 import { useAuth } from '../../auth/useAuth'
+import logo from '../../assets/logo-iinsad.jpg'
 
 const ICONS: Record<string, LucideIcon> = {
   home: House, users: Users, building: BookOpen, folders: FolderKanban,
@@ -29,7 +30,7 @@ export function AppShell() {
     {sidebarOpen && <button aria-label="Cerrar menú" className="drawer-backdrop" onClick={() => setSidebarOpen(false)} />}
     <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
       <div className="brand">
-        <div className="brand-mark">I</div>
+        <img className="logo-img logo-img--side" src={logo} alt="Logo del IINSAD"/>
         <div><strong>IINSAD</strong><small>UMSA · Investigación</small></div>
         <button className="close-sidebar" aria-label="Cerrar menú" onClick={() => setSidebarOpen(false)}><X size={19} /></button>
       </div>
