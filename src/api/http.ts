@@ -7,6 +7,28 @@ export class ApiError extends Error {
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 
+const FIELD_LABELS: Record<string, string> = {
+  email: 'Correo', password: 'Contraseña', nombres: 'Nombres', apellido_paterno: 'Apellido paterno',
+  apellido_materno: 'Apellido materno', rol: 'Rol', unidad: 'Unidad', proyecto_id: 'Proyecto',
+  vigente_desde: 'Vigente desde', vigente_hasta: 'Vigente hasta', motivo: 'Motivo',
+}
+
+// Django devuelve `{detail}` o `{campo: ["mensaje"]}` (y anidado: `{persona: {campo: [...]}}`).
+function flattenErrors(value: unknown, field: string): string[] {
+  if (typeof value === 'string') return [field ? `${FIELD_LABELS[field] ?? field}: ${value}` : value]
+  if (Array.isArray(value)) return value.flatMap(item => flattenErrors(item, field))
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, inner]) => flattenErrors(inner, key === 'non_field_errors' ? '' : key))
+  }
+  return []
+}
+
+function messageFrom(data: unknown, status: number): string {
+  if (data && typeof data === 'object' && 'detail' in data && typeof data.detail === 'string') return data.detail
+  const messages = flattenErrors(data, '')
+  return messages.length ? messages.join(' ') : `Error del servidor (${status}).`
+}
+
 export async function apiRequest<T>(path: string, options: RequestInit = {}, accessToken?: string): Promise<T> {
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json')
@@ -19,12 +41,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, acc
   }
   if (!response.ok) {
     const data: unknown = await response.json().catch(() => null)
-    let message = `Error del servidor (${response.status}).`
-    if (data && typeof data === 'object') {
-      const detail = 'detail' in data ? data.detail : null
-      if (typeof detail === 'string') message = detail
-    }
-    throw new ApiError(response.status, message)
+    throw new ApiError(response.status, messageFrom(data, response.status))
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
