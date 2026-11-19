@@ -1,21 +1,58 @@
-# Frontend IINSAD · Primera entrega de Génesis (18-11-2026)
+# Frontend IINSAD
 
-Aplicación inicial React + TypeScript + Vite. Separada del repositorio backend de David.
+Interfaz web del **Sistema de Gestión y Seguimiento de Proyectos de Investigación** del Instituto de Investigación en Salud y Desarrollo (IINSAD), Universidad Mayor de San Andrés (UMSA).
 
-## Objetivo del día
-1. Frontend React + TypeScript configurado.
-2. Layout reutilizable (menú, cabecera, área de contenido).
-3. Login visual preparado para la API Django real.
-4. Componentes reutilizables (`DataTable`, estructura y tarjetas).
-5. Vistas iniciales distintas para los cinco roles (sin fingir que los módulos ya están implementados).
+Está construida con **React 19 + TypeScript + Vite** y consume la API REST del backend Django (repositorio `backend_iinsad`). Este repositorio contiene **solo el frontend**.
 
-## Requisitos para Windows
-- Node.js LTS compatible con Vite 7: versión >= 20.19 o >= 22.12 (recomendado usar una LTS actual).
-- Git.
-- Visual Studio Code.
+## Contenido
 
-## Ejecutar
-En PowerShell, desde la carpeta `frontend_iinsad`:
+1. [Estado actual](#estado-actual)
+2. [Requisitos](#requisitos)
+3. [Puesta en marcha](#puesta-en-marcha)
+4. [Variables de entorno](#variables-de-entorno)
+5. [Estructura de archivos](#estructura-de-archivos)
+6. [Cómo funciona](#cómo-funciona)
+7. [Roles y menú](#roles-y-menú)
+8. [Endpoints que usa el frontend](#endpoints-que-usa-el-frontend)
+9. [Scripts disponibles](#scripts-disponibles)
+10. [Seguridad y límites](#seguridad-y-límites)
+11. [Despliegue](#despliegue)
+12. [Flujo de trabajo con Git](#flujo-de-trabajo-con-git)
+13. [Trabajo en equipo](#trabajo-en-equipo)
+
+## Estado actual
+
+| Funcionalidad | Estado |
+|---|---|
+| Inicio y cierre de sesión contra Django (JWT) | Funcional |
+| Menú y rutas protegidas según el rol | Funcional |
+| Gestión de usuarios: listar, buscar, filtrar, crear, editar, desactivar y reactivar | Funcional |
+| Asignación y revocación de roles (con ámbito, vigencia y motivo) | Funcional |
+| Consulta de unidades de investigación | Solo lectura |
+| Proyectos, evaluaciones, hitos, informes, documentos y calendario | Marcadores visuales (aún no implementados) |
+
+## Requisitos
+
+- **Node.js** `>= 20.19` o `>= 22.12` (versión LTS).
+- **Git**.
+- El **backend Django** corriendo en `http://127.0.0.1:8000` con PostgreSQL y migraciones aplicadas (ver el README de `backend_iinsad`).
+
+## Puesta en marcha
+
+### 1. Backend (en la carpeta `backend_iinsad`)
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py runserver
+```
+
+Para tener usuarios de prueba en desarrollo, cargar los datos semilla una sola vez:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "exec(open('scripts/seed_dev.py', encoding='utf-8').read())"
+```
+
+### 2. Frontend (en la carpeta `frontend_iinsad`)
 
 ```powershell
 Copy-Item .env.example .env
@@ -23,67 +60,189 @@ npm install
 npm run dev
 ```
 
-Visita `http://localhost:5173/`.
+Abrir `http://localhost:5173/`.
 
-El modo **Demostración** está disponible exclusivamente cuando `import.meta.env.DEV` es verdadero y `.env` contiene `VITE_ENABLE_DEMO=true`. No concede ningún acceso al backend; muestra opciones visuales según cada rol.
+### 3. Usuarios de prueba (solo desarrollo)
 
-## Conectar Django
-- David inicia Django localmente en `http://127.0.0.1:8000` con PostgreSQL y migraciones aplicadas.
-- Este frontend ya utiliza las rutas correctas de su ZIP, descritas en `docs/CONTRATO_API.md`.
-- Desde login, escribe correo/contraseña reales de la BD de desarrollo y pulsa **Ingresar**.
-- La sesión usa access token en memoria; al recargar la página se pierde y hay que iniciar sesión de nuevo. Es temporal y **no** una solución final de autenticación en producción.
-- El `vite.config.ts` redirige `/api/*` al backend local. Si Django usa otro puerto, ajústalo allí.
+El seed crea un usuario por rol, todos con la contraseña `Iinsad-Dev-2026`:
 
-## Carpeta fuente
+| Correo | Rol |
+|---|---|
+| `admin@iinsad.test` | Administrador técnico |
+| `direccion@iinsad.test` | Dirección |
+| `ctc@iinsad.test` | Miembro del CTC |
+| `responsable@iinsad.test` | Responsable de unidad |
+| `investigador@iinsad.test` | Investigador |
+
+> Estas cuentas existen solo para desarrollo. **No ejecutar el seed en producción.** El login usa **correo electrónico**, no nombre de usuario.
+
+### Modo demostración (opcional)
+
+Con `VITE_ENABLE_DEMO=true` y `npm run dev`, la pantalla de login muestra botones para entrar como cada rol con **datos ficticios**. No concede acceso real al backend y se desactiva por completo en el build de producción. Para probar la conexión real, pon `VITE_ENABLE_DEMO=false`.
+
+## Variables de entorno
+
+Se definen en el archivo `.env` (copia de `.env.example`). El archivo `.env` **no se sube a Git**. Solo deben contener valores públicos, nunca secretos.
+
+| Variable | Valor por defecto | Descripción |
+|---|---|---|
+| `VITE_API_BASE` | `/api/v1` | Prefijo de la API. En desarrollo el proxy de Vite lo redirige al backend. |
+| `VITE_ENABLE_DEMO` | `true` | Habilita el modo demostración (solo en `npm run dev`). |
+
+## Estructura de archivos
+
 ```text
-src/
-├── api/                  # peticiones HTTP y contrato de autenticación
-├── auth/                 # sesión, protección de rutas, hooks
-├── components/
-│   ├── layout/           # estructura general, menú lateral, cabecera
-│   └── ui/               # tabla configurable reutilizable
-├── config/               # roles y navegación declarativa
-├── pages/                # Login, Inicio, Usuarios, Unidades, módulos futuros
-├── App.tsx               # rutas
-├── main.tsx              # punto de entrada
-└── styles.css            # estilos globales y responsivos
+frontend_iinsad/
+├── docs/
+│   ├── CONTRATO_API.md          # endpoints del backend que consume el frontend
+│   └── PRUEBAS_INTEGRACION.md   # registro de las pruebas de integración
+├── src/
+│   ├── api/
+│   │   ├── http.ts              # cliente HTTP: URL base, token Bearer y mensajes de error
+│   │   ├── auth.ts              # login, perfil (/me) y cierre de sesión
+│   │   └── users.ts             # usuarios, asignaciones de rol y unidades
+│   ├── assets/
+│   │   └── logo-iinsad.jpg      # logo institucional (login, menú y pestaña)
+│   ├── auth/
+│   │   ├── auth-context.ts      # tipos y contexto de la sesión
+│   │   ├── AuthProvider.tsx     # estado de sesión: signIn, signOut, rol activo
+│   │   ├── ProtectedRoute.tsx   # redirige a /login si no hay sesión
+│   │   └── useAuth.ts           # hook para leer la sesión
+│   ├── components/
+│   │   ├── layout/
+│   │   │   └── AppShell.tsx     # estructura general: menú lateral y cabecera
+│   │   └── ui/
+│   │       ├── DataTable.tsx    # tabla configurable reutilizable
+│   │       └── Modal.tsx        # ventana emergente reutilizable
+│   ├── config/
+│   │   ├── roles.ts             # códigos y nombres de los cinco roles
+│   │   └── navigation.ts        # opciones del menú y qué rol ve cada una
+│   ├── pages/
+│   │   ├── LoginPage.tsx        # inicio de sesión
+│   │   ├── DashboardPage.tsx    # inicio, distinto según el rol
+│   │   ├── UsersPage.tsx        # administración de usuarios
+│   │   ├── UnitsPage.tsx        # unidades de investigación
+│   │   ├── ModulePage.tsx       # marcador para módulos futuros
+│   │   └── users/
+│   │       ├── UserFormModal.tsx   # formulario de crear/editar usuario
+│   │       └── UserRolesModal.tsx  # asignar y revocar roles
+│   ├── App.tsx                  # definición de rutas
+│   ├── main.tsx                 # punto de entrada
+│   ├── styles.css               # estilos globales y responsivos
+│   └── vite-env.d.ts            # tipos de Vite
+├── .env.example                 # plantilla de variables de entorno
+├── .gitignore
+├── eslint.config.js             # reglas de lint
+├── index.html                   # página base (título e ícono)
+├── package.json                 # dependencias y scripts
+├── package-lock.json            # versiones exactas (subir siempre a Git)
+├── tsconfig.json                # configuración de TypeScript (raíz)
+├── tsconfig.app.json            # TypeScript para el código de src/
+├── tsconfig.node.json           # TypeScript para vite.config.ts
+└── vite.config.ts               # Vite: plugin de React y proxy /api
 ```
 
-## Control de calidad
-```powershell
-npm run typecheck
-npm run lint
-npm run build
-```
+## Cómo funciona
 
-Una vez que `npm install` genere `package-lock.json`, **súbelo también a Git** para garantizar instalaciones reproducibles. No subas `node_modules`, `.env` ni contraseñas.
+**Conexión con el backend.** En desarrollo, `vite.config.ts` redirige todo lo que empiece con `/api` a `http://127.0.0.1:8000`. El navegador cree que habla con el mismo origen, por lo que no hay problemas de CORS. Si Django usa otro puerto, se ajusta ahí.
 
-## Publicar en GitHub (primera vez)
-Crea repositorio VACÍO en GitHub: `Genesixd/frontend_iinsad` (Private), sin README ni licencia.
+**Sesión.** Al iniciar sesión, `auth.ts` llama a `POST /usuarios/auth/login/` y luego a `GET /usuarios/auth/me/`. El token de acceso se guarda **solo en memoria**: al recargar la página hay que iniciar sesión de nuevo. `AuthProvider` mantiene la sesión y `ProtectedRoute` bloquea las rutas privadas.
 
-Desde la carpeta del proyecto:
-```powershell
-git init -b main
-git add .
-git commit -m "feat: base React TypeScript y vistas por rol"
-git remote add origin https://github.com/Genesixd/frontend_iinsad.git
-git push -u origin main
-```
+**Menú y rutas por rol.** `config/navigation.ts` declara qué rol ve cada opción del menú, y `AppShell` dibuja solo las que corresponden al rol activo. Si un usuario tiene varios roles, puede cambiar el rol activo, que solo modifica el menú visible.
 
-Si tu Git ya está inicializado, no repitas `git init`. Comprueba `git status` antes de subir. GitHub solicitará autenticación si la sesión local no está configurada.
+**Errores.** `http.ts` traduce las respuestas de error de Django (por ejemplo `Correo: ya existe`) a mensajes legibles para el usuario.
+
+**Gestión de usuarios** (`pages/UsersPage.tsx`, solo administrador técnico):
+- Lista paginada de 20 en 20, con búsqueda por nombre o correo y filtro por estado.
+- Crear y editar usuarios. El correo no se puede cambiar al editar. Sin contraseña inicial, la cuenta queda *pendiente de activación*.
+- Desactivar (cierra las sesiones de esa cuenta) y reactivar. No se puede desactivar la propia cuenta.
+- Asignar roles con su ámbito: **Global** (Dirección, CTC, Admin. técnico), **por unidad** (Responsable de unidad) o **por proyecto** (Investigador). Las asignaciones no se editan ni se borran: se **revocan** con un motivo obligatorio y queda el historial.
+
+## Roles y menú
+
+| Opción del menú | Investigador | Resp. de unidad | CTC | Dirección | Admin. técnico |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Inicio | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Proyectos \* | ✔ | ✔ | ✔ | ✔ | |
+| Evaluaciones \* | | ✔ | ✔ | ✔ | |
+| Hitos y planificación \* | ✔ | ✔ | | ✔ | |
+| Informes \* | ✔ | ✔ | | ✔ | |
+| Documentos \* | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Calendario \* | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Usuarios | | | | | ✔ |
+| Unidades y líneas | | | | | ✔ |
+
+\* Marcador visual: módulo aún no implementado.
+
+## Endpoints que usa el frontend
+
+Todos bajo `/api/v1/`. El detalle completo está en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md) y la documentación interactiva del backend en `http://127.0.0.1:8000/api/docs/`.
+
+| Acción | Método | Ruta |
+|---|---|---|
+| Iniciar sesión | POST | `/usuarios/auth/login/` |
+| Perfil del usuario actual | GET | `/usuarios/auth/me/` |
+| Cerrar sesión (revoca tokens) | POST | `/usuarios/auth/logout/` |
+| Listar usuarios (`page`, `search`, `is_active`) | GET | `/usuarios/usuarios/` |
+| Crear usuario | POST | `/usuarios/usuarios/` |
+| Ver / editar usuario | GET / PATCH | `/usuarios/usuarios/{id}/` |
+| Desactivar usuario (baja lógica) | DELETE | `/usuarios/usuarios/{id}/` |
+| Asignar rol | POST | `/usuarios/asignaciones/` |
+| Revocar rol (exige `motivo`) | POST | `/usuarios/asignaciones/{id}/revocar/` |
+| Listar unidades | GET | `/usuarios/unidades/` |
+
+## Scripts disponibles
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo en `http://localhost:5173` |
+| `npm run typecheck` | Revisa los tipos de TypeScript |
+| `npm run lint` | Revisa el estilo y errores comunes con ESLint |
+| `npm run build` | Genera la versión de producción en `dist/` |
+| `npm run preview` | Sirve localmente el build de producción |
+
+Antes de subir cambios conviene ejecutar `npm run typecheck`, `npm run lint` y `npm run build`.
 
 ## Seguridad y límites
-- Nunca utilizar la vista React como control de acceso definitivo; Django siempre comprueba roles y ámbito en API.
-- No guardamos tokens en almacenamiento persistente del navegador.
-- El `logout` del backend revoca sesiones; el botón siempre limpia la sesión local.
-- No mostrar como reales ni usar para la defensa los datos ficticios del modo demo.
-- Vistas de proyectos, hitos, informes, documentos y calendario: **marcadores visuales**, no módulos terminados.
-- La lista de usuarios y unidades sí puede hacer solicitudes de lectura reales cuando inicia sesión un administrador técnico.
-- Sin servidor Django no se pueden probar autenticación real ni datos de PostgreSQL.
-- Falta seleccionar y aplicar un rol activo **en backend**; la UI de momento solo cambia el menú entre roles ya asignados al usuario.
+
+- **El frontend no es control de acceso.** Ocultar un botón es solo comodidad visual: Django comprueba roles y ámbito en cada petición y rechaza con 403 lo que no corresponde.
+- El token se guarda en memoria, **nunca** en `localStorage` ni `sessionStorage`. Es una solución temporal; la estrategia definitiva de sesión (por ejemplo cookies `HttpOnly`) debe acordarse con el backend.
+- El token de acceso dura 30 minutos y el frontend aún no renueva la sesión con el `refresh`: pasado ese tiempo hay que volver a iniciar sesión.
+- No subir a Git `.env`, `node_modules/`, contraseñas ni claves.
+- Los datos del modo demostración son ficticios y no deben usarse como reales.
+- Los marcadores de módulos futuros no son funcionalidad terminada.
+
+## Despliegue
+
+El proxy de Vite **solo existe en desarrollo**. En producción el frontend son archivos estáticos (`npm run build` genera `dist/`) y hay que resolver cómo llegan las peticiones a `/api`:
+
+- **Recomendado:** un servidor web (Nginx, Caddy u otro) que sirva `dist/` y reenvíe `/api/` al backend, todo bajo un mismo dominio con HTTPS. Así no hace falta CORS.
+- **Alternativa:** definir `VITE_API_BASE` con la URL completa del backend al hacer el build, y configurar `CORS_ALLOWED_ORIGINS` en el backend.
+
+Del lado del backend, producción exige definir `SECRET_KEY`, `ALLOWED_HOSTS` y las variables de PostgreSQL, y revisar la configuración de HTTPS y archivos estáticos. Consultar el README de `backend_iinsad`.
+
+## Flujo de trabajo con Git
+
+Cada funcionalidad se desarrolla en una rama propia y se integra a `main` al terminar.
+
+```powershell
+git checkout -b feature/nombre-de-la-funcionalidad
+```
+```powershell
+git add .
+```
+```powershell
+git commit -m "Descripción clara del cambio"
+```
+```powershell
+git push -u origin feature/nombre-de-la-funcionalidad
+```
+
+Después se abre un **Pull Request** en GitHub, se revisa y se une a `main`. Antes de empezar una rama nueva, actualizar `main` con `git pull origin main`. Los nombres de rama no llevan espacios.
 
 ## Trabajo en equipo
-- David mantiene `backend_iinsad` con Django/PostgreSQL.
-- Génesis mantiene `frontend_iinsad` con React/TypeScript.
-- Acordar las API en `docs/CONTRATO_API.md` y documentar cambios de endpoints.
-- Compartir rama de cambios (p. ej. `feature/login`) y revisar Pull Requests antes de integrar a `main`.
+
+- **David** mantiene `backend_iinsad` (Django + PostgreSQL).
+- **Génesis** mantiene `frontend_iinsad` (React + TypeScript).
+- Los cambios en endpoints se acuerdan y se documentan en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md).
+- Revisar los Pull Requests antes de integrar a `main`.
