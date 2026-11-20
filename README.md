@@ -28,7 +28,9 @@ Está construida con **React 19 + TypeScript + Vite** y consume la API REST del 
 | Menú y rutas protegidas según el rol | Funcional |
 | Gestión de usuarios: listar, buscar, filtrar, crear, editar, desactivar y reactivar | Funcional |
 | Asignación y revocación de roles (con ámbito, vigencia y motivo) | Funcional |
-| Consulta de unidades de investigación | Solo lectura |
+| CRUD de unidades y líneas de investigación (crear, editar, activar/desactivar, eliminar, buscar, filtrar) | Funcional |
+| Validaciones del cliente y del servidor, con errores por campo | Funcional |
+| Pruebas automatizadas (`npm test`) | Funcional |
 | Proyectos, evaluaciones, hitos, informes, documentos y calendario | Marcadores visuales (aún no implementados) |
 
 ## Requisitos
@@ -93,9 +95,6 @@ Se definen en el archivo `.env` (copia de `.env.example`). El archivo `.env` **n
 
 ```text
 frontend_iinsad/
-├── docs/
-│   ├── CONTRATO_API.md          # endpoints del backend que consume el frontend
-│   └── PRUEBAS_INTEGRACION.md   # registro de las pruebas de integración
 ├── src/
 │   ├── api/
 │   │   ├── http.ts              # cliente HTTP: URL base, token Bearer y mensajes de error
@@ -176,7 +175,7 @@ frontend_iinsad/
 
 ## Endpoints que usa el frontend
 
-Todos bajo `/api/v1/`. El detalle completo está en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md) y la documentación interactiva del backend en `http://127.0.0.1:8000/api/docs/`.
+Todos bajo `/api/v1/`. La documentación interactiva del backend está en `http://127.0.0.1:8000/api/docs/`.
 
 | Acción | Método | Ruta |
 |---|---|---|
@@ -244,5 +243,5 @@ Después se abre un **Pull Request** en GitHub, se revisa y se une a `main`. Ant
 
 - **David** mantiene `backend_iinsad` (Django + PostgreSQL).
 - **Génesis** mantiene `frontend_iinsad` (React + TypeScript).
-- Los cambios en endpoints se acuerdan y se documentan en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md).
+- Los cambios en endpoints se acuerdan con el backend y se documentan allí (`/api/docs/`).
 - Revisar los Pull Requests antes de integrar a `main`.

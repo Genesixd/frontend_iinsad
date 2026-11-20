@@ -1,8 +1,23 @@
+/** Errores por campo tal como los valida Django: `{ codigo: ['Ya existe ...'] }`. */
+export type FieldErrors = Record<string, string[]>
+
 export class ApiError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(public readonly status: number, message: string, public readonly fields: FieldErrors = {}) {
     super(message)
     this.name = 'ApiError'
   }
+}
+
+/** Extrae los mensajes de nivel superior por campo (los anidados y `detail` quedan en `message`). */
+export function fieldErrorsFrom(data: unknown): FieldErrors {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return {}
+  const result: FieldErrors = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (key === 'detail') continue
+    const messages = flattenErrors(value, '')
+    if (messages.length) result[key] = messages
+  }
+  return result
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
@@ -11,6 +26,7 @@ const FIELD_LABELS: Record<string, string> = {
   email: 'Correo', password: 'Contraseña', nombres: 'Nombres', apellido_paterno: 'Apellido paterno',
   apellido_materno: 'Apellido materno', rol: 'Rol', unidad: 'Unidad', proyecto_id: 'Proyecto',
   vigente_desde: 'Vigente desde', vigente_hasta: 'Vigente hasta', motivo: 'Motivo',
+  codigo: 'Código', nombre: 'Nombre', activa: 'Estado',
 }
 
 // Django devuelve `{detail}` o `{campo: ["mensaje"]}` (y anidado: `{persona: {campo: [...]}}`).
@@ -41,7 +57,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, acc
   }
   if (!response.ok) {
     const data: unknown = await response.json().catch(() => null)
-    throw new ApiError(response.status, messageFrom(data, response.status))
+    throw new ApiError(response.status, messageFrom(data, response.status), fieldErrorsFrom(data))
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>

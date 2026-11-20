@@ -37,3 +37,11 @@
 /* ---- Logo institucional ---- */
 .logo-img{display:block;border-radius:50%;object-fit:cover;background:white;flex-shrink:0;box-shadow:0 0 0 2px #ffffff33}
 .logo-img--login{width:56px;height:56px}.logo-img--side{width:52px;height:52px}
+.field--invalid input,.field--invalid select{border-color:#d9776c;background:#fffafa}
+.field .field-error{color:#b3392e;font-weight:600}
+.checkbox-field span{display:flex;align-items:center;gap:9px;font-weight:700}.checkbox-field input[type=checkbox]{width:16px;height:16px;padding:0;accent-color:#163d55}
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid #e1e9ee}
+.tab{background:transparent;border:0;border-bottom:3px solid transparent;padding:11px 16px;font-size:13px;font-weight:800;color:#7a8f9d;margin-bottom:-1px}
+.tab:hover{color:#2b5568}.tab--active{color:#163d55;border-bottom-color:#f4bd4a}
+.danger-button{color:#a84138;border-color:#efcdc7}.danger-button:hover{background:#fff0ed}
+.row-actions .danger-button:disabled{opacity:.5;cursor:not-allowed}

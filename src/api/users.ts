@@ -81,7 +81,8 @@ export function getUser(token: string, id: number) {
 }
 
 export function listUnits(token: string) {
-  return apiRequest<Page<UnitOption>>('/usuarios/unidades/', {}, token)
+  // Selector de unidades para asignar roles: pide una página grande para que no se corte en 20.
+  return apiRequest<Page<UnitOption>>('/usuarios/unidades/?page_size=100', {}, token)
 }
 
 export type CreateAssignmentInput = {
