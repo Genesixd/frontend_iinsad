@@ -78,15 +78,32 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
   }
 
   async function revoke(id: number) {
-    setError('')
-    try {
-      await revokeAssignment(token, id, revokeReason.trim())
-      setRevoking(null); setRevokeReason('')
-      await reload()
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'No se pudo revocar la asignación.')
-    }
+  const reason = revokeReason.trim()
+
+  // Validar el motivo antes de llamar al backend
+  if (!reason) {
+    setError('Debes indicar el motivo de la revocación.')
+    return
   }
+
+  // Si el motivo es válido, continuar con la revocación
+  setError('')
+
+  try {
+    await revokeAssignment(token, id, reason)
+
+    setRevoking(null)
+    setRevokeReason('')
+
+    await reload()
+  } catch (failure) {
+    setError(
+      failure instanceof Error
+        ? failure.message
+        : 'No se pudo revocar la asignación.'
+    )
+  }
+}
 
   return <Modal wide title="Roles del usuario" subtitle={`${user.persona?.nombre_completo ?? 'Sin nombre'} · ${user.email}`} onClose={onClose}>
     {error && <div className="alert-error">{error}</div>}
@@ -107,7 +124,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
               {!a.revocada_en && (revoking === a.id
                 ? <div className="inline-revoke">
                   <input placeholder="Motivo de la revocación" value={revokeReason} onChange={event => setRevokeReason(event.target.value)} autoFocus/>
-                  <button type="button" className="secondary-button" onClick={() => void revoke(a.id)} disabled={!revokeReason.trim()}>Confirmar</button>
+                  <button type="button" className="secondary-button" onClick={() => void revoke(a.id)}>Confirmar</button>
                   <button type="button" className="secondary-button" onClick={() => { setRevoking(null); setRevokeReason('') }}>Cancelar</button>
                 </div>
                 : <button type="button" className="secondary-button" onClick={() => { setRevoking(a.id); setRevokeReason('') }}><Ban size={13}/> Revocar</button>)}
