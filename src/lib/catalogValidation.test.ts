@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CODE_MAX, hasErrors, joinFieldErrors, normalizeCode, normalizeName, validateLine, validateUnit,
+  CODE_MAX, hasErrors, joinFieldErrors, normalizeCode, normalizeName, validateInitialRole, validateLine, validateUnit,
 } from './catalogValidation'
 
 describe('normalización', () => {
@@ -53,5 +53,17 @@ describe('utilidades', () => {
 
   it('joinFieldErrors une varios mensajes por campo', () => {
     expect(joinFieldErrors({ codigo: ['A.', 'B.'], nombre: ['C.'] })).toEqual({ codigo: 'A. B.', nombre: 'C.' })
+  })
+})
+
+describe('validateInitialRole (CUN-001)', () => {
+  it('exige elegir un rol', () => expect(validateInitialRole('', undefined, '').rol).toBeTruthy())
+  it('el rol de unidad exige la unidad', () => {
+    expect(validateInitialRole('RESPONSABLE_UNIDAD', 'UNIDAD', '').unidad).toBeTruthy()
+    expect(validateInitialRole('RESPONSABLE_UNIDAD', 'UNIDAD', '3')).toEqual({})
+  })
+  it('los roles global y de proyecto no piden unidad', () => {
+    expect(validateInitialRole('CTC', 'GLOBAL', '')).toEqual({})
+    expect(validateInitialRole('INVESTIGADOR', 'PROYECTO', '')).toEqual({})
   })
 })

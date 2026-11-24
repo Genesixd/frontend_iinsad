@@ -30,6 +30,9 @@ Está construida con **React 19 + TypeScript + Vite** y consume la API REST del 
 | Asignación y revocación de roles (con ámbito, vigencia y motivo) | Funcional |
 | CRUD de unidades y líneas de investigación (crear, editar, activar/desactivar, eliminar, buscar, filtrar) | Funcional |
 | Validaciones del cliente y del servidor, con errores por campo | Funcional |
+| Rol inicial obligatorio al crear un usuario (y bloqueo al revocar su último rol) | Funcional |
+| Consulta de auditoría (solo administrador técnico): filtros, buscador de actor y detalle antes/después | Funcional |
+| Exportación de la auditoría a Excel y PDF (todos los registros filtrados, hasta 10.000) | Funcional |
 | Pruebas automatizadas (`npm test`) | Funcional |
 | Proyectos, evaluaciones, hitos, informes, documentos y calendario | Marcadores visuales (aún no implementados) |
 

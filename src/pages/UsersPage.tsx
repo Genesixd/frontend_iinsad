@@ -130,7 +130,7 @@ export function UsersPage() {
     <p className="note-below"><ShieldCheck size={12}/> Los permisos se verifican en el servidor: aunque esta pantalla se manipule, Django solo acepta estas operaciones del administrador técnico.</p>
 
     {token && formFor && <UserFormModal token={token} user={formFor === 'new' ? undefined : formFor} onClose={() => setFormFor(null)}
-      onSaved={() => { const wasNew = formFor === 'new'; setFormFor(null); setNotice(wasNew ? 'Usuario creado. Ahora puedes asignarle un rol.' : 'Cambios guardados.'); reload() }}/>}
+      onSaved={() => { const wasNew = formFor === 'new'; setFormFor(null); setNotice(wasNew ? 'Usuario creado con su rol inicial. Puedes asignarle más roles desde "Roles".' : 'Cambios guardados.'); reload() }}/>}
     {token && rolesFor && <UserRolesModal token={token} user={rolesFor} onClose={() => setRolesFor(null)} onChanged={reload}/>}
   </div>
 }

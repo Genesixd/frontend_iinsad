@@ -15,7 +15,7 @@ function roleName(code: string) { return isRoleCode(code) ? ROLES[code] : code }
 
 function scopeDetail(a: Assignment) {
   if (a.ambito === 'UNIDAD') return a.unidad_nombre ?? `Unidad ${a.unidad}`
-  if (a.ambito === 'PROYECTO') return `Proyecto ${a.proyecto_id}`
+  if (a.ambito === 'PROYECTO') return a.proyecto_id ? `Proyecto ${a.proyecto_id}` : 'Proyecto: sin asignar aún'
   return SCOPE_TEXT.GLOBAL
 }
 
@@ -65,7 +65,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
       await createAssignment(token, {
         usuario: user.id, rol,
         unidad: scope === 'UNIDAD' ? Number(unidad) : null,
-        proyecto_id: scope === 'PROYECTO' ? Number(proyecto) : null,
+        proyecto_id: scope === 'PROYECTO' && proyecto ? Number(proyecto) : null,
         vigente_desde: desde || null, vigente_hasta: hasta || null, motivo: motivo.trim(),
       })
       setUnidad(''); setProyecto(''); setDesde(''); setHasta(''); setMotivo('')
@@ -109,6 +109,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
     {error && <div className="alert-error">{error}</div>}
 
     <h4 className="modal-section">Asignaciones</h4>
+    <p className="subtle-text">Un usuario siempre conserva al menos un rol vigente: para quitar el último, asigna primero el nuevo.</p>
     {assignments.length === 0
       ? <div className="empty-state">Este usuario todavía no tiene roles. Sin un rol vigente no puede entrar al sistema.</div>
       : <div className="table-scroll"><table className="compact-table">
@@ -148,8 +149,9 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
           {units.map(unit => <option key={unit.id} value={unit.id}>{unit.codigo} · {unit.nombre}</option>)}
         </select>
       </label>}
-      {scope === 'PROYECTO' && <label className="field">ID del proyecto
-        <input type="number" min={1} value={proyecto} onChange={event => setProyecto(event.target.value)} required/>
+      {scope === 'PROYECTO' && <label className="field">ID del proyecto (opcional)
+        <input type="number" min={1} value={proyecto} onChange={event => setProyecto(event.target.value)}/>
+        <small>Puede quedar vacío hasta que exista el módulo de proyectos.</small>
       </label>}
 
       <label className="field">Vigente desde (opcional)

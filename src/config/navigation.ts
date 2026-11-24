@@ -3,7 +3,7 @@ import type { RoleCode } from './roles'
 export type MenuItem = {
   path: string
   label: string
-  icon: 'home' | 'users' | 'building' | 'folders' | 'reviews' | 'plan' | 'files' | 'calendar' | 'reports'
+  icon: 'home' | 'users' | 'building' | 'folders' | 'reviews' | 'plan' | 'files' | 'calendar' | 'reports' | 'audit'
   roles: readonly RoleCode[]
   phase: 'base' | 'proximo'
 }
@@ -20,6 +20,7 @@ export const NAVIGATION: MenuItem[] = [
   { path: '/calendario', label: 'Calendario', icon: 'calendar', roles: TODOS, phase: 'proximo' },
   { path: '/usuarios', label: 'Usuarios', icon: 'users', roles: ['ADMIN_TECNICO'], phase: 'base' },
   { path: '/unidades', label: 'Unidades y líneas', icon: 'building', roles: ['ADMIN_TECNICO'], phase: 'base' },
+  { path: '/auditoria', label: 'Auditoría', icon: 'audit', roles: ['ADMIN_TECNICO'], phase: 'base' },
 ]
 
 export function menuForRole(role: RoleCode): MenuItem[] {

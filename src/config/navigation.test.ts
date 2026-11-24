@@ -19,6 +19,10 @@ describe('menú por rol', () => {
     }
   })
 
+  it('solo el administrador técnico ve la auditoría', () => {
+    for (const role of ROLE_CODES) expect(roleCanAccess(role, '/auditoria'), role).toBe(role === 'ADMIN_TECNICO')
+  })
+
   it('el CTC no ve proyectos de investigador (hitos ni informes)', () => {
     expect(roleCanAccess('CTC', '/evaluaciones')).toBe(true)
     expect(roleCanAccess('CTC', '/hitos')).toBe(false)

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Activity, Bell, BookOpen, CalendarDays, ChevronDown, ClipboardCheck, FileText, FolderKanban, House, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, X } from 'lucide-react'
+import { Activity, Bell, BookOpen, CalendarDays, ChevronDown, ClipboardCheck, FileText, FolderKanban, History, House, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { menuForRole } from '../../config/navigation'
 import { ROLES, type RoleCode } from '../../config/roles'
@@ -9,7 +9,7 @@ import logo from '../../assets/logo-iinsad.jpg'
 
 const ICONS: Record<string, LucideIcon> = {
   home: House, users: Users, building: BookOpen, folders: FolderKanban,
-  reviews: ClipboardCheck, plan: Activity, files: FileText, calendar: CalendarDays, reports: LayoutDashboard,
+  reviews: ClipboardCheck, plan: Activity, files: FileText, calendar: CalendarDays, reports: LayoutDashboard, audit: History,
 }
 
 export function AppShell() {

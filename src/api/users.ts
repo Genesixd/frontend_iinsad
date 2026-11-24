@@ -52,14 +52,22 @@ export type UnitOption = { id: number; codigo: string; nombre: string; activa: b
 
 export type UserFilters = { page: number; search: string; estado: '' | 'true' | 'false' }
 
-export function listUsers(token: string, { page, search, estado }: UserFilters) {
+export function listUsers(token: string, { page, search, estado }: UserFilters, pageSize?: number) {
   const query = new URLSearchParams({ page: String(page) })
+  if (pageSize) query.set('page_size', String(pageSize))
   if (search.trim()) query.set('search', search.trim())
   if (estado) query.set('is_active', estado)
   return apiRequest<Page<UserRow>>(`/usuarios/usuarios/?${query}`, {}, token)
 }
 
-export type CreateUserInput = { email: string; password?: string; persona: PersonaData }
+// Toda cuenta nace con un rol (CUN-001). `unidad` solo para roles de ámbito UNIDAD.
+export type CreateUserInput = {
+  email: string
+  password?: string
+  persona: PersonaData
+  rol: RoleCode
+  unidad?: number | null
+}
 
 export function createUser(token: string, data: CreateUserInput) {
   return apiRequest<UserRow>('/usuarios/usuarios/', { method: 'POST', body: JSON.stringify(data) }, token)

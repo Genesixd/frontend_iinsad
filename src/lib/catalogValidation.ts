@@ -62,3 +62,11 @@ export const hasErrors = (errors: FormErrors) => Object.keys(errors).length > 0
 export function joinFieldErrors(fields: Record<string, string[]>): FormErrors {
   return Object.fromEntries(Object.entries(fields).map(([key, messages]) => [key, messages.join(' ')]))
 }
+
+/** Rol inicial al crear una cuenta (CUN-001). `scope` es el ámbito que deriva el servidor del rol. */
+export function validateInitialRole(rol: string, scope: 'GLOBAL' | 'UNIDAD' | 'PROYECTO' | undefined, unidad: string): FormErrors {
+  const errors: FormErrors = {}
+  if (!rol) errors.rol = 'Selecciona el rol inicial de la cuenta.'
+  else if (scope === 'UNIDAD' && !unidad) errors.unidad = 'Este rol requiere indicar la unidad.'
+  return errors
+}

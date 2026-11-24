@@ -62,3 +62,18 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, acc
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
+
+/** Descarga un archivo (Excel, PDF…) con el token Bearer. Devuelve el contenido como Blob. */
+export async function apiDownload(path: string, accessToken: string): Promise<Blob> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${accessToken}` } })
+  } catch {
+    throw new ApiError(0, 'No se pudo conectar con Django. Verifica que el backend esté encendido en el puerto 8000.')
+  }
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    throw new ApiError(response.status, messageFrom(data, response.status), fieldErrorsFrom(data))
+  }
+  return response.blob()
+}
