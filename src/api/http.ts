@@ -27,6 +27,11 @@ const FIELD_LABELS: Record<string, string> = {
   apellido_materno: 'Apellido materno', rol: 'Rol', unidad: 'Unidad', proyecto_id: 'Proyecto',
   vigente_desde: 'Vigente desde', vigente_hasta: 'Vigente hasta', motivo: 'Motivo',
   codigo: 'Código', nombre: 'Nombre', activa: 'Estado',
+  titulo: 'Título', resumen: 'Resumen', justificacion: 'Justificación', objetivo_general: 'Objetivo general',
+  objetivos_especificos: 'Objetivos específicos', metodologia: 'Metodología', resultados_esperados: 'Resultados esperados',
+  fecha_inicio_prevista: 'Inicio previsto', fecha_fin_prevista: 'Fin previsto', equipo: 'Equipo', persona: 'Persona',
+  funcion: 'Función', funciones: 'Responsabilidades', procedencia: 'Procedencia', lineas: 'Líneas',
+  investigador_principal: 'Investigador principal', referencia_institucional: 'Referencia institucional', search: 'Búsqueda',
 }
 
 // Django devuelve `{detail}` o `{campo: ["mensaje"]}` (y anidado: `{persona: {campo: [...]}}`).

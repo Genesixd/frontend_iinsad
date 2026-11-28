@@ -16,7 +16,7 @@ export function DashboardPage() {
     <div className="section-heading"><div><h3>Accesos a tus funciones</h3><p>Opciones visibles según el rol seleccionado.</p></div><span className="section-counter">{items.length} opciones</span></div>
     <div className="tiles-grid">{items.map((item, i) => {
       const Icon = ICONS[i % ICONS.length]!
-      return <Link key={item.path} to={item.path} className="feature-tile"><span className="tile-icon"><Icon size={24}/></span><div><span className="tile-label">{item.phase === 'proximo' ? 'MÓDULO EN PREPARACIÓN' : 'DISPONIBLE PARA PRUEBAS'}</span><h4>{item.label}</h4><p>{item.phase === 'proximo' ? 'Vista inicial: se integrará en las próximas iteraciones.' : 'Accede al módulo de administración institucional.'}</p></div><ArrowUpRight className="tile-arrow" size={20}/></Link>
+      return <Link key={item.path} to={item.path} className="feature-tile"><span className="tile-icon"><Icon size={24}/></span><div><span className="tile-label">{item.phase === 'proximo' ? 'MÓDULO EN PREPARACIÓN' : 'DISPONIBLE PARA PRUEBAS'}</span><h4>{item.label}</h4><p>{item.phase === 'proximo' ? 'Vista inicial: se integrará en las próximas iteraciones.' : 'Abre el módulo y trabaja con los datos del sistema.'}</p></div><ArrowUpRight className="tile-arrow" size={20}/></Link>
     })}</div>
     <div className="info-banner"><Shield size={19}/><div><strong>Sobre la seguridad del sistema</strong><p>Este menú facilita la navegación, pero no concede permisos. El backend Django debe verificar cada petición y cada recurso.</p></div></div>
   </div>

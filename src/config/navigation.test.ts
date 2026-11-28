@@ -29,6 +29,10 @@ describe('menú por rol', () => {
     expect(roleCanAccess('CTC', '/informes')).toBe(false)
   })
 
+  it('los cinco roles entran a Proyectos (Django decide qué proyectos ve cada uno)', () => {
+    for (const role of ROLE_CODES) expect(roleCanAccess(role, '/proyectos'), role).toBe(true)
+  })
+
   it('una ruta inexistente nunca está permitida', () => {
     for (const role of ROLE_CODES) expect(roleCanAccess(role, '/no-existe')).toBe(false)
   })

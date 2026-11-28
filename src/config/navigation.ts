@@ -12,7 +12,7 @@ const TODOS: RoleCode[] = ['INVESTIGADOR', 'RESPONSABLE_UNIDAD', 'CTC', 'DIRECCI
 
 export const NAVIGATION: MenuItem[] = [
   { path: '/inicio', label: 'Inicio', icon: 'home', roles: TODOS, phase: 'base' },
-  { path: '/proyectos', label: 'Proyectos', icon: 'folders', roles: ['INVESTIGADOR', 'RESPONSABLE_UNIDAD', 'CTC', 'DIRECCION'], phase: 'proximo' },
+  { path: '/proyectos', label: 'Proyectos', icon: 'folders', roles: TODOS, phase: 'base' },
   { path: '/evaluaciones', label: 'Evaluaciones', icon: 'reviews', roles: ['RESPONSABLE_UNIDAD', 'CTC', 'DIRECCION'], phase: 'proximo' },
   { path: '/hitos', label: 'Hitos y planificación', icon: 'plan', roles: ['INVESTIGADOR', 'RESPONSABLE_UNIDAD', 'DIRECCION'], phase: 'proximo' },
   { path: '/informes', label: 'Informes', icon: 'reports', roles: ['INVESTIGADOR', 'RESPONSABLE_UNIDAD', 'DIRECCION'], phase: 'proximo' },

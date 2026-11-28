@@ -34,7 +34,8 @@ Está construida con **React 19 + TypeScript + Vite** y consume la API REST del 
 | Consulta de auditoría (solo administrador técnico): filtros, buscador de actor y detalle antes/después | Funcional |
 | Exportación de la auditoría a Excel y PDF (todos los registros filtrados, hasta 10.000) | Funcional |
 | Pruebas automatizadas (`npm test`) | Funcional |
-| Proyectos, evaluaciones, hitos, informes, documentos y calendario | Marcadores visuales (aún no implementados) |
+| Propuestas (M02): listado con filtros, registro, detalle, edición del borrador, equipo, envío a revisión e historial | Funcional |
+| Evaluaciones, hitos, informes, documentos y calendario | Marcadores visuales (aún no implementados) |
 
 ## Requisitos
 
@@ -102,7 +103,8 @@ frontend_iinsad/
 │   ├── api/
 │   │   ├── http.ts              # cliente HTTP: URL base, token Bearer y mensajes de error
 │   │   ├── auth.ts              # login, perfil (/me) y cierre de sesión
-│   │   └── users.ts             # usuarios, asignaciones de rol y unidades
+│   │   ├── users.ts             # usuarios, asignaciones de rol y unidades
+│   │   └── projects.ts          # proyectos, propuestas, equipo y buscador de personas
 │   ├── assets/
 │   │   └── logo-iinsad.jpg      # logo institucional (login, menú y pestaña)
 │   ├── auth/
@@ -125,9 +127,19 @@ frontend_iinsad/
 │   │   ├── UsersPage.tsx        # administración de usuarios
 │   │   ├── UnitsPage.tsx        # unidades de investigación
 │   │   ├── ModulePage.tsx       # marcador para módulos futuros
-│   │   └── users/
-│   │       ├── UserFormModal.tsx   # formulario de crear/editar usuario
-│   │       └── UserRolesModal.tsx  # asignar y revocar roles
+│   │   ├── users/
+│   │   │   ├── UserFormModal.tsx   # formulario de crear/editar usuario
+│   │   │   └── UserRolesModal.tsx  # asignar y revocar roles
+│   │   └── projects/
+│   │       ├── ProjectsPage.tsx       # listado y filtros
+│   │       ├── ProjectDetailPage.tsx  # detalle, envío e historial
+│   │       ├── NewProposalModal.tsx   # registrar una propuesta
+│   │       ├── EditDraftModal.tsx     # editar el borrador
+│   │       ├── ProposalFields.tsx     # campos compartidos por los dos formularios
+│   │       ├── TeamSection.tsx        # integrantes y funciones
+│   │       └── PersonPicker.tsx       # buscador de personas
+│   ├── lib/
+│   │   └── proposal.ts          # textos, validación y fechas de propuestas
 │   ├── App.tsx                  # definición de rutas
 │   ├── main.tsx                 # punto de entrada
 │   ├── styles.css               # estilos globales y responsivos
@@ -160,12 +172,18 @@ frontend_iinsad/
 - Desactivar (cierra las sesiones de esa cuenta) y reactivar. No se puede desactivar la propia cuenta.
 - Asignar roles con su ámbito: **Global** (Dirección, CTC, Admin. técnico), **por unidad** (Responsable de unidad) o **por proyecto** (Investigador). Las asignaciones no se editan ni se borran: se **revocan** con un motivo obligatorio y queda el historial.
 
+**Propuestas** (`pages/projects/`, ruta `/proyectos`):
+- El servidor decide qué proyectos ve cada cuenta; la pantalla solo envía los filtros (estado, unidad, participación y búsqueda).
+- Registran propuestas el Investigador (como investigador principal) y el Administrador técnico (a nombre de quien elija).
+- En el detalle, los botones salen del campo `permisos` que envía Django. Lo enviado a revisión es de solo lectura; corregir crea una versión nueva y la anterior queda en el historial.
+- Datos de demostración y guion: `docs/M02_proyectos.md` del backend.
+
 ## Roles y menú
 
 | Opción del menú | Investigador | Resp. de unidad | CTC | Dirección | Admin. técnico |
 |---|:-:|:-:|:-:|:-:|:-:|
 | Inicio | ✔ | ✔ | ✔ | ✔ | ✔ |
-| Proyectos \* | ✔ | ✔ | ✔ | ✔ | |
+| Proyectos | ✔ | ✔ | ✔ | ✔ | ✔ |
 | Evaluaciones \* | | ✔ | ✔ | ✔ | |
 | Hitos y planificación \* | ✔ | ✔ | | ✔ | |
 | Informes \* | ✔ | ✔ | | ✔ | |
@@ -192,6 +210,14 @@ Todos bajo `/api/v1/`. La documentación interactiva del backend está en `http:
 | Asignar rol | POST | `/usuarios/asignaciones/` |
 | Revocar rol (exige `motivo`) | POST | `/usuarios/asignaciones/{id}/revocar/` |
 | Listar unidades | GET | `/usuarios/unidades/` |
+| Listar proyectos (`search`, `estado_propuesta`, `unidad`, `persona`) | GET | `/proyectos/` |
+| Registrar propuesta / ver detalle | POST / GET | `/proyectos/` · `/proyectos/{id}/` |
+| Buscar personas | GET | `/proyectos/personas/?search=` |
+| Nueva versión de corrección | POST | `/proyectos/{id}/propuestas/` |
+| Editar / descartar borrador | PATCH / DELETE | `/proyectos/{id}/propuestas/{version}/` |
+| Enviar a revisión | POST | `/proyectos/{id}/propuestas/{version}/enviar/` |
+| Agregar integrante | POST | `.../{version}/integrantes/` |
+| Cambiar función / retirar | PATCH / DELETE | `.../{version}/integrantes/{integrante}/` |
 
 ## Scripts disponibles
 

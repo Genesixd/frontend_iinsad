@@ -6,6 +6,8 @@ import { DashboardPage } from './pages/DashboardPage'
 import { AuditPage } from './pages/AuditPage'
 import { LoginPage } from './pages/LoginPage'
 import { ModulePage } from './pages/ModulePage'
+import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
+import { ProjectsPage } from './pages/projects/ProjectsPage'
 import { UnitsPage } from './pages/UnitsPage'
 import { UsersPage } from './pages/UsersPage'
 
@@ -18,7 +20,9 @@ export default function App() {
         <Route path="/usuarios" element={<UsersPage/>}/>
         <Route path="/unidades" element={<UnitsPage/>}/>
         <Route path="/auditoria" element={<AuditPage/>}/>
-        {NAVIGATION.filter(item => !['/inicio', '/usuarios', '/unidades', '/auditoria'].includes(item.path)).map(item => <Route key={item.path} path={item.path} element={<ModulePage path={item.path}/>}/>)}
+        <Route path="/proyectos" element={<ProjectsPage/>}/>
+        <Route path="/proyectos/:id" element={<ProjectDetailPage/>}/>
+        {NAVIGATION.filter(item => !['/inicio', '/proyectos', '/usuarios', '/unidades', '/auditoria'].includes(item.path)).map(item => <Route key={item.path} path={item.path} element={<ModulePage path={item.path}/>}/>)}
         <Route path="*" element={<Navigate to="/inicio" replace/>}/>
       </Route>
     </Route>

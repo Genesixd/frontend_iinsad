@@ -64,3 +64,24 @@
 .actor-chip button{border:0;background:transparent;color:#244f63;display:grid;place-items:center;padding:2px}
 .event-summary{margin:0 0 14px;padding:12px 14px;background:#eef5f8;border-left:4px solid #2b6a86;border-radius:6px;font-size:13px;line-height:1.6;color:#203f52}
 .tech-details{margin:16px 0 4px;border:1px solid #e5edf1;border-radius:9px;padding:10px 14px;background:#fafcfd}.tech-details summary{cursor:pointer;font-size:12px;font-weight:800;color:#5b7585}.tech-details .detail-grid{margin:12px 0 2px}
+
+/* ---- Propuestas (M02) ---- */
+.tag-negative{background:#fdeae7;color:#a84138}
+.field textarea{border:1px solid #dce4eb;border-radius:9px;background:white;padding:11px 13px;color:#1c364c;font:inherit;font-size:13px;font-weight:400;line-height:1.6;outline:none;resize:vertical}
+.field textarea:focus{border-color:#36778e;box-shadow:0 0 0 4px #36778e19}.field--invalid textarea{border-color:#d9776c;background:#fffafa}
+.check-group{border:1px solid #dce4eb;border-radius:9px;margin:0;padding:10px 13px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.check-group legend{font-size:12px;font-weight:800;color:#365064;padding:0 4px}.check-group label{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#2e4b5e}.check-group input{margin-top:2px;accent-color:#163d55}.check-group small{font-size:11px;color:#8797a1}
+.read-value{font-weight:400;font-size:13px;color:#2e4b5e}
+.toolbar-check{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#2e5063}.toolbar-check input{accent-color:#163d55}
+.table-link{color:#1f5f7a;font-weight:800}.table-link:hover{text-decoration:underline}
+.table-select{border:1px solid #dce4eb;border-radius:8px;padding:7px 10px;background:white;color:#2e5063;font-size:12px}
+.back-link{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#2b6a86;margin-bottom:6px}
+.back-link+.section-heading{margin-top:14px}.back-link~.message-panel,.back-link+.alert-error{margin-top:14px}
+.section-heading>div{min-width:0}.section-heading h2{overflow-wrap:anywhere}
+.alert-flush{margin:0 0 14px}.stack-gap{margin-top:18px}.card-body{padding:20px 25px}
+.card-note{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 25px 14px;padding:11px 14px;background:#fff7e5;border:1px solid #f1e0b5;border-radius:9px;font-size:12px;color:#7c5b17}
+.data-card .alert-error ul{margin:0;padding-left:18px;line-height:1.7}
+.long-text{white-space:pre-wrap;line-height:1.7}
+.team-card td:first-child{min-width:180px}
+.member-form{border-top:1px solid #edf2f4;padding:20px 25px 24px}.member-form h4{font-size:14px;color:#294457;margin-bottom:14px}.member-form .primary-button{padding:11px 18px}
+@media(max-width:610px){.card-body,.member-form{padding-left:16px;padding-right:16px}.card-note{margin-left:16px;margin-right:16px}.data-card-head{flex-wrap:wrap}}

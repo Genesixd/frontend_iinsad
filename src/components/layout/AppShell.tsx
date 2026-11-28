@@ -19,7 +19,7 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   if (!session) return null
   const items = menuForRole(session.activeRole)
-  const title = items.find(item => item.path === location.pathname)?.label ?? 'Sistema IINSAD'
+  const title = items.find(item => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))?.label ?? 'Sistema IINSAD'
 
   async function leave() {
     try { await signOut() } catch { /* la sesión local se borra incluso si falla el servidor */ }
