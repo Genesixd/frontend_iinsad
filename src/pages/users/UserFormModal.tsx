@@ -16,7 +16,7 @@ type Props = {
 const SCOPE_HINT = {
   GLOBAL: 'Rol global: no depende de una unidad ni de un proyecto.',
   UNIDAD: 'Rol por unidad: elige la unidad que supervisará.',
-  PROYECTO: 'Rol por proyecto: se vinculará a un proyecto cuando exista el módulo de proyectos.',
+  PROYECTO: 'Rol por proyecto: puede limitarse a un proyecto desde la pantalla de roles.',
 } as const
 
 export function UserFormModal({ token, user, onClose, onSaved }: Props) {
@@ -43,7 +43,7 @@ export function UserFormModal({ token, user, onClose, onSaved }: Props) {
   useEffect(() => {
     if (editing) return
     let cancelled = false
-    listUnits(token).then(page => { if (!cancelled) setUnits(page.results.filter(unit => unit.activa)) })
+    listUnits(token).then(all => { if (!cancelled) setUnits(all.filter(unit => unit.activa)) })
       .catch(() => { if (!cancelled) setError('No se pudo cargar la lista de unidades.') })
     return () => { cancelled = true }
   }, [editing, token])

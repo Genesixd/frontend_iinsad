@@ -67,7 +67,9 @@ export function UsersPage() {
     if (!token) return
     const turningOff = user.is_active
     const name = user.persona?.nombre_completo || user.email
-    if (turningOff && !window.confirm(`¿Desactivar la cuenta de ${name}? Se cerrarán sus sesiones y no podrá entrar.`)) return
+    const question = turningOff ? `¿Desactivar la cuenta de ${name}? Se cerrarán sus sesiones y no podrá entrar.`
+      : `¿Reactivar la cuenta de ${name}? Podrá volver a entrar.`
+    if (!window.confirm(question)) return
     setNotice(''); setError('')
     try {
       if (turningOff) await deactivateUser(token, user.id)

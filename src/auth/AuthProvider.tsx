@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { authenticate, revokeSession } from '../api/auth'
+import { onSessionExpired } from '../api/http'
 import type { RoleCode } from '../config/roles'
 import { AuthContext, type Session } from './auth-context'
 
@@ -7,9 +8,16 @@ const DEMO_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO ===
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
+  const [expired, setExpired] = useState(false)
+
+  useEffect(() => {
+    onSessionExpired(() => { setSession(null); setExpired(true) })
+    return () => onSessionExpired()
+  }, [])
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { accessToken, profile, roles } = await authenticate(email, password)
+    setExpired(false)
     setSession({ profile, roles, activeRole: roles[0]!, token: accessToken, demo: false })
   }, [])
 
@@ -34,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     finally { setSession(null) }
   }, [session?.token])
 
-  const value = useMemo(() => ({ session, signIn, signInDemo, setActiveRole, signOut }),
-    [session, signIn, signInDemo, setActiveRole, signOut])
+  const value = useMemo(() => ({ session, expired, signIn, signInDemo, setActiveRole, signOut }),
+    [session, expired, signIn, signInDemo, setActiveRole, signOut])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, FlaskConical, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { ROLES, ROLE_CODES, type RoleCode } from '../config/roles'
@@ -8,14 +8,16 @@ import logo from '../assets/logo-iinsad.jpg'
 const DEMO_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO === 'true'
 
 export function LoginPage() {
-  const { session, signIn, signInDemo } = useAuth()
+  const { session, expired, signIn, signInDemo } = useAuth()
   const navigate = useNavigate()
+  // Si venías de una página protegida, vuelves a ella después de entrar.
+  const from = (useLocation().state as { from?: string } | null)?.from ?? '/inicio'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  if (session) return <Navigate to="/inicio" replace />
+  if (session) return <Navigate to={from} replace />
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -23,7 +25,7 @@ export function LoginPage() {
     setLoading(true)
     try {
       await signIn(email.trim(), password)
-      navigate('/inicio', { replace: true })
+      navigate(from, { replace: true })
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'No se pudo iniciar sesión.')
     } finally {
@@ -43,6 +45,7 @@ export function LoginPage() {
       <div className="login-art-bottom">Instituto de Investigación en Salud y Desarrollo<br/>Universidad Mayor de San Andrés</div>
     </section>
     <section className="login-form-side"><div className="login-card"><span className="login-card-tag"><ShieldCheck size={16}/> ACCESO INSTITUCIONAL</span><h2>Bienvenido al IINSAD</h2><p className="login-description">Ingresa con las credenciales de tu cuenta institucional.</p>
+      {expired && !error && <div className="alert-error" role="status">Tu sesión terminó. Vuelve a iniciar sesión.</div>}
       <form onSubmit={event => void submit(event)}>
         <label htmlFor="email">Correo electrónico</label><input id="email" type="email" name="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="nombre@iinsad.umsa.bo" required />
         <label htmlFor="password">Contraseña</label><input id="password" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Ingresa tu contraseña" minLength={1} required />

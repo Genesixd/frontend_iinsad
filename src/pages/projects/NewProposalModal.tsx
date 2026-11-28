@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import type { Persona } from '../../api/auth'
-import { fetchLines, type Line, type Unit } from '../../api/catalogs'
+import { fetchActiveLines, type Line, type Unit } from '../../api/catalogs'
 import { ApiError } from '../../api/http'
 import { createProposal, type PersonOption, type ProjectDetail } from '../../api/projects'
 import { Modal } from '../../components/ui/Modal'
@@ -41,8 +41,8 @@ export function NewProposalModal({ token, units, me, chooseInvestigator, onClose
     setLines([]); setSelectedLines([])
     if (!unidad) return
     let cancelled = false
-    fetchLines(token, { page: 1, search: '', estado: 'true', unidad })
-      .then(page => { if (!cancelled) setLines(page.results) })
+    fetchActiveLines(token, unidad)
+      .then(all => { if (!cancelled) setLines(all) })
       .catch((failure: unknown) => { if (!cancelled) setFormError(failure instanceof Error ? failure.message : 'No se pudieron cargar las líneas.') })
     return () => { cancelled = true }
   }, [token, unidad])

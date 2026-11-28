@@ -1,4 +1,4 @@
-import { apiRequest } from './http'
+import { apiRequest, fetchAllPages } from './http'
 import type { Page } from './users'
 
 export type Unit = {
@@ -42,6 +42,13 @@ export function fetchUnits(token: string, { page, search, estado }: CatalogFilte
   const qs = query({ page, search, activa: estado, page_size: pageSize })
   return apiRequest<Page<Unit>>(`/usuarios/unidades/?${qs}`, {}, token)
 }
+
+/** Todas las unidades, para selectores y filtros. */
+export const fetchAllUnits = (token: string) => fetchAllPages<Unit>('/usuarios/unidades/', {}, token)
+
+/** Todas las líneas activas de una unidad, para elegirlas en un formulario. */
+export const fetchActiveLines = (token: string, unidad: string) =>
+  fetchAllPages<Line>('/usuarios/lineas/', { activa: 'true', unidad }, token)
 
 export function createUnit(token: string, data: UnitInput) {
   return apiRequest<Unit>('/usuarios/unidades/', { method: 'POST', body: JSON.stringify(data) }, token)

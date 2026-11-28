@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Plus, Search } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { fetchUnits, type Unit } from '../../api/catalogs'
+import { fetchAllUnits, type Unit } from '../../api/catalogs'
 import { fetchProjects, type ProjectFilters, type ProjectRow, type ProposalState } from '../../api/projects'
 import { useAuth } from '../../auth/useAuth'
 import { DataTable, type Column } from '../../components/ui/DataTable'
@@ -33,18 +33,20 @@ export function ProjectsPage() {
   const [filters, setFilters] = useState<ProjectFilters>(NO_FILTERS)
   const [searchInput, setSearchInput] = useState('')
   const [units, setUnits] = useState<Unit[]>([])
+  const [unitsError, setUnitsError] = useState('')
   const [creating, setCreating] = useState(false)
-  const { rows, count, loading, error, setError, setLoading } = useRemoteList(
+  const { rows, count, loading, error, setLoading } = useRemoteList(
     fetchProjects, token, allowed && !demo, filters, () => setFilters(current => ({ ...current, page: 1 })))
 
   useEffect(() => {
     if (!allowed || demo || !token) return
     let cancelled = false
-    fetchUnits(token, { page: 1, search: '', estado: '' }, 100)
-      .then(page => { if (!cancelled) setUnits(page.results) })
-      .catch((failure: unknown) => { if (!cancelled) setError(failure instanceof Error ? failure.message : 'No se pudieron cargar las unidades.') })
+    fetchAllUnits(token)
+      .then(all => { if (!cancelled) setUnits(all) })
+      // Error propio: no oculta el listado, que se cargó por separado.
+      .catch((failure: unknown) => { if (!cancelled) setUnitsError(failure instanceof Error ? failure.message : 'No se pudieron cargar las unidades.') })
     return () => { cancelled = true }
-  }, [allowed, demo, token, setError])
+  }, [allowed, demo, token])
 
   if (!allowed) return <div className="content-area"><div className="message-panel"><h2>Acceso restringido</h2><p>Esta opción no está disponible para el rol seleccionado.</p></div></div>
 
@@ -102,6 +104,7 @@ export function ProjectsPage() {
       </form>
 
       {error && <div className="alert-error alert-inline" role="alert">{error}</div>}
+      {unitsError && <div className="alert-error alert-inline" role="alert">{unitsError}</div>}
       {loading ? <div className="empty-state">Cargando proyectos…</div> : !error && <DataTable columns={columns} rows={rows} rowKey={row => row.id} emptyText={emptyText}/>}
 
       {totalPages > 1 && <div className="pager">

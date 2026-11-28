@@ -196,8 +196,7 @@ describe('ProjectDetailPage: editar el borrador', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByText('Después')).toBeInTheDocument()
     expect(writes(calls)[0]).toMatchObject({ method: 'PATCH', url: '/api/v1/proyectos/7/propuestas/11/' })
-    expect(writes(calls)[0]?.body).toMatchObject({ resumen: 'Después', fecha_inicio_prevista: '2027-01-10', fecha_fin_prevista: null })
-    expect(writes(calls)[0]?.body).not.toHaveProperty('unidad')
+    expect(writes(calls)[0]?.body).toEqual({ resumen: 'Después' }) // solo lo modificado
   })
 
   it('no guarda sin título', async () => {

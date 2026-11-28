@@ -79,7 +79,7 @@ describe('UserFormModal: rol inicial (CUN-001)', () => {
     render(<UserFormModal token="tok" onClose={vi.fn()} onSaved={onSaved}/>)
     await llenarDatos()
     await userEvent.selectOptions(screen.getByLabelText(/^Rol inicial/), 'INVESTIGADOR')
-    expect(screen.getByText(/cuando exista el módulo de proyectos/)).toBeInTheDocument()
+    expect(screen.getByText(/puede limitarse a un proyecto/)).toBeInTheDocument()
     expect(screen.queryByLabelText(/^Unidad/)).not.toBeInTheDocument()
     await crear()
     await waitFor(() => expect(onSaved).toHaveBeenCalled())

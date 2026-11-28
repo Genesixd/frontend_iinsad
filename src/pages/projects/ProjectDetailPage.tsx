@@ -43,9 +43,10 @@ export function ProjectDetailPage() {
       setProject(await fetchProject(token, projectId))
       setLoadError('')
     } catch (failure) {
-      setProject(null)
-      setLoadError(failure instanceof ApiError && failure.status === 404
-        ? 'Este proyecto no existe o no tienes permiso para consultarlo.'
+      // Solo un 404 retira lo que ya se veía; un corte de red conserva los datos y permite reintentar.
+      const gone = failure instanceof ApiError && failure.status === 404
+      if (gone) setProject(null)
+      setLoadError(gone ? 'Este proyecto no existe o no tienes permiso para consultarlo.'
         : failure instanceof Error ? failure.message : 'No se pudo cargar el proyecto.')
     }
   }, [token, projectId])
@@ -56,13 +57,16 @@ export function ProjectDetailPage() {
 
   if (!allowed) return <div className="content-area"><div className="message-panel"><h2>Acceso restringido</h2><p>Esta opción no está disponible para el rol seleccionado.</p></div></div>
   if (!token) return <div className="content-area">{back}<div className="message-panel"><h2>Requiere una cuenta</h2><p>El modo demostración no se conecta con Django.</p></div></div>
-  if (loadError) return <div className="content-area">{back}<div className="alert-error" role="alert">{loadError}</div></div>
+  if (loadError && !project) return <div className="content-area">{back}<div className="alert-error" role="alert">{loadError}</div></div>
   if (!project || project.id !== projectId) return <div className="content-area">{back}<div className="message-panel">Cargando proyecto…</div></div>
 
   const history = versionHistory(project)
   const selected = (history.find(entry => entry.version.id === selectedId) ?? history[0])?.version
-  const draft = history.find(entry => !entry.version.enviada)?.version
-  const onDraft = !!selected && !selected.enviada
+  // Los proyectos incorporados no pasan por borrador ni revisión.
+  const isProposal = project.origen === 'PROPUESTA'
+  const draft = isProposal ? history.find(entry => !entry.version.enviada)?.version : undefined
+  const onDraft = isProposal && !!selected && !selected.enviada
+  const unsentText = isProposal ? 'Borrador: todavía no se ha enviado.' : 'Registro incorporado: no pasa por revisión.'
   const permisos = project.permisos
   const missing = onDraft && permisos.enviar ? missingToSend(selected) : []
 
@@ -96,7 +100,7 @@ export function ProjectDetailPage() {
     { key: 'version', title: 'Versión', cell: ({ version }) => <strong>Versión {version.numero_version}</strong> },
     { key: 'tipo', title: 'Tipo', cell: ({ version }) => VERSION_TYPE_LABELS[version.tipo_version] },
     { key: 'intento', title: 'Presentación', cell: ({ attempt }) => `N.º ${attempt}` },
-    { key: 'envio', title: 'Enviada', cell: ({ version }) => version.enviada ? formatDateTime(version.enviada_en) : <span className="small-tag tag-muted">Borrador sin enviar</span> },
+    { key: 'envio', title: 'Enviada', cell: ({ version }) => version.enviada ? formatDateTime(version.enviada_en) : <span className="small-tag tag-muted">{isProposal ? 'Borrador sin enviar' : 'No aplica'}</span> },
     { key: 'ver', title: 'Consultar', cell: ({ version }) => version.id === selected?.id
       ? <span className="subtle-text">Mostrando</span>
       : <button type="button" className="secondary-button" onClick={() => { setSelectedId(version.id); setProblems(null) }} aria-label={`Ver versión ${version.numero_version}`}>Ver</button> },
@@ -107,6 +111,8 @@ export function ProjectDetailPage() {
     <div className="section-heading"><div><span className="page-eyebrow">{project.codigo ?? 'PROPUESTA SIN CÓDIGO'}</span><h2>{project.titulo ?? '(Sin título visible)'}</h2></div><StateTag project={project}/></div>
 
     {notice && <div className="alert-ok alert-flush" role="status">{notice}</div>}
+    {loadError && <div className="card-note" role="alert"><span>{loadError}</span>
+      <button type="button" className="secondary-button" onClick={() => void load()}>Reintentar</button></div>}
 
     <div className="data-card card-body"><dl className="detail-grid">
       <div><dt>Unidad responsable</dt><dd>{project.unidad_codigo} · {project.unidad_nombre}</dd></div>
@@ -116,13 +122,13 @@ export function ProjectDetailPage() {
       <div><dt>Registrado</dt><dd>{formatDateTime(project.creado_en)}</dd></div>
     </dl></div>
 
-    {project.estado_propuesta === 'EN_REVISION' && <div className="info-banner">La propuesta está en revisión: la versión enviada no se puede modificar. La resolución llegará con el módulo de evaluación (M03).</div>}
-    {project.estado_propuesta === 'EN_CORRECCION' && <div className="info-banner">Hay una corrección en preparación. La versión enviada se conserva sin cambios.</div>}
+    {!project.anulado && project.estado_propuesta === 'EN_REVISION' && <div className="info-banner">La propuesta está en revisión: la versión enviada no se puede modificar. La resolución llegará con el módulo de evaluación (M03).</div>}
+    {!project.anulado && project.estado_propuesta === 'EN_CORRECCION' && <div className="info-banner">Hay una corrección en preparación. La versión enviada se conserva sin cambios.</div>}
 
     {!selected ? <div className="message-panel stack-gap">No hay versiones que puedas consultar.</div> : <>
       <section className="data-card stack-gap" aria-label="Contenido de la propuesta">
         <div className="data-card-head"><div><h3>Versión {selected.numero_version} · {VERSION_TYPE_LABELS[selected.tipo_version]}</h3>
-          <p>{selected.enviada ? `Enviada el ${formatDateTime(selected.enviada_en)}. Solo lectura.` : 'Borrador: todavía no se ha enviado.'}</p></div>
+          <p>{selected.enviada ? `Enviada el ${formatDateTime(selected.enviada_en)}. Solo lectura.` : unsentText}</p></div>
           <div className="row-actions">
             {onDraft && permisos.editar_borrador && <button type="button" className="secondary-button" disabled={busy} onClick={() => setEditing(true)}><Pencil size={13}/> Editar borrador</button>}
             {onDraft && permisos.eliminar_borrador && <button type="button" className="secondary-button danger-button" disabled={busy} onClick={() => discard(selected)}><Trash2 size={13}/> Descartar borrador</button>}
@@ -154,7 +160,7 @@ export function ProjectDetailPage() {
       </section>
     </>}
 
-    {editing && draft && <EditDraftModal token={token} projectId={project.id} version={draft} onClose={() => setEditing(false)}
+    {editing && draft && <EditDraftModal token={token} projectId={project.id} version={draft} onClose={() => { setEditing(false); void load() }}
       onSaved={() => { setEditing(false); setProblems(null); setNotice('Borrador guardado.'); void load() }}/>}
   </div>
 }

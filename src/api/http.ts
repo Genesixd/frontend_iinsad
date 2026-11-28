@@ -32,6 +32,7 @@ const FIELD_LABELS: Record<string, string> = {
   fecha_inicio_prevista: 'Inicio previsto', fecha_fin_prevista: 'Fin previsto', equipo: 'Equipo', persona: 'Persona',
   funcion: 'Función', funciones: 'Responsabilidades', procedencia: 'Procedencia', lineas: 'Líneas',
   investigador_principal: 'Investigador principal', referencia_institucional: 'Referencia institucional', search: 'Búsqueda',
+  identificador_institucional: 'Identificador institucional', is_active: 'Cuenta activa',
 }
 
 // Django devuelve `{detail}` o `{campo: ["mensaje"]}` (y anidado: `{persona: {campo: [...]}}`).
@@ -50,6 +51,24 @@ function messageFrom(data: unknown, status: number): string {
   return messages.length ? messages.join(' ') : `Error del servidor (${status}).`
 }
 
+let sessionExpiredHandler: (() => void) | undefined
+
+/** Quien mantiene la sesión se registra aquí para cerrarla cuando el servidor responde 401. */
+export function onSessionExpired(handler?: () => void) { sessionExpiredHandler = handler }
+
+async function toApiError(response: Response, authenticated: boolean) {
+  // Un cuerpo que no es JSON (p. ej. una página de error) no aporta detalle: se usa el mensaje genérico.
+  const data: unknown = await response.json().catch(() => null)
+  if (response.status === 401 && authenticated) {
+    sessionExpiredHandler?.()
+    return new ApiError(401, 'Tu sesión terminó. Vuelve a iniciar sesión.')
+  }
+  // Solo un 400 trae errores de campos; en otros códigos `code` o `messages` no son campos.
+  return new ApiError(response.status, messageFrom(data, response.status), response.status === 400 ? fieldErrorsFrom(data) : {})
+}
+
+const NO_CONNECTION = 'No se pudo conectar con Django. Verifica que el backend esté encendido en el puerto 8000.'
+
 export async function apiRequest<T>(path: string, options: RequestInit = {}, accessToken?: string): Promise<T> {
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json')
@@ -58,14 +77,28 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, acc
   try {
     response = await fetch(`${API_BASE}${path}`, { ...options, headers })
   } catch {
-    throw new ApiError(0, 'No se pudo conectar con Django. Verifica que el backend esté encendido en el puerto 8000.')
+    throw new ApiError(0, NO_CONNECTION)
   }
-  if (!response.ok) {
-    const data: unknown = await response.json().catch(() => null)
-    throw new ApiError(response.status, messageFrom(data, response.status), fieldErrorsFrom(data))
-  }
+  if (!response.ok) throw await toApiError(response, !!accessToken)
   if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+  try {
+    return await response.json() as T
+  } catch {
+    throw new ApiError(response.status, 'El servidor respondió con un formato inesperado.')
+  }
+}
+
+type Paged<T> = { next: string | null; results: T[] }
+
+/** Recorre todas las páginas de una lista (para selectores que no pueden quedar cortados). */
+export async function fetchAllPages<T>(path: string, query: Record<string, string>, accessToken: string): Promise<T[]> {
+  const rows: T[] = []
+  for (let page = 1; ; page += 1) {
+    const params = new URLSearchParams({ ...query, page: String(page), page_size: '100' })
+    const data = await apiRequest<Paged<T>>(`${path}?${params}`, {}, accessToken)
+    rows.push(...data.results)
+    if (!data.next) return rows
+  }
 }
 
 /** Descarga un archivo (Excel, PDF…) con el token Bearer. Devuelve el contenido como Blob. */
@@ -74,11 +107,8 @@ export async function apiDownload(path: string, accessToken: string): Promise<Bl
   try {
     response = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${accessToken}` } })
   } catch {
-    throw new ApiError(0, 'No se pudo conectar con Django. Verifica que el backend esté encendido en el puerto 8000.')
+    throw new ApiError(0, NO_CONNECTION)
   }
-  if (!response.ok) {
-    const data: unknown = await response.json().catch(() => null)
-    throw new ApiError(response.status, messageFrom(data, response.status), fieldErrorsFrom(data))
-  }
+  if (!response.ok) throw await toApiError(response, true)
   return response.blob()
 }

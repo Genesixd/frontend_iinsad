@@ -114,7 +114,7 @@ const versions = (project: number) => `/proyectos/${project}/propuestas/`
 const version = (project: number, id: number) => `${versions(project)}${id}/`
 const members = (project: number, id: number) => `${version(project, id)}integrantes/`
 
-export function updateDraft(token: string, project: number, id: number, data: ProposalContent) {
+export function updateDraft(token: string, project: number, id: number, data: Partial<ProposalContent>) {
   return apiRequest<Version>(version(project, id), { method: 'PATCH', body: JSON.stringify(data) }, token)
 }
 

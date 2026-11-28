@@ -21,7 +21,11 @@ function scopeDetail(a: Assignment) {
 
 function state(a: Assignment) {
   if (a.revocada_en) return { text: 'Revocada', cls: 'tag-muted' }
-  return a.vigente ? { text: 'Vigente', cls: 'tag-positive' } : { text: 'Fuera de vigencia', cls: 'tag-muted' }
+  if (a.vigente) return { text: 'Vigente', cls: 'tag-positive' }
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/La_Paz' }).format(new Date())
+  if (a.vigente_desde && a.vigente_desde > today) return { text: 'Programada', cls: 'tag-info' }
+  if (a.vigente_hasta && a.vigente_hasta < today) return { text: 'Vencida', cls: 'tag-muted' }
+  return { text: 'Fuera de vigencia', cls: 'tag-muted' }
 }
 
 export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
@@ -41,6 +45,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
   // revocación en curso
   const [revoking, setRevoking] = useState<number | null>(null)
   const [revokeReason, setRevokeReason] = useState('')
+  const [confirming, setConfirming] = useState(false)
 
   const scope = ROLE_SCOPE[rol]
 
@@ -52,7 +57,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    listUnits(token).then(page => { if (!cancelled) setUnits(page.results.filter(unit => unit.activa)) })
+    listUnits(token).then(all => { if (!cancelled) setUnits(all.filter(unit => unit.activa)) })
       .catch(() => { if (!cancelled) setError('No se pudo cargar la lista de unidades.') })
     return () => { cancelled = true }
   }, [token])
@@ -88,6 +93,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
 
   // Si el motivo es válido, continuar con la revocación
   setError('')
+  setConfirming(true)
 
   try {
     await revokeAssignment(token, id, reason)
@@ -102,6 +108,8 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
         ? failure.message
         : 'No se pudo revocar la asignación.'
     )
+  } finally {
+    setConfirming(false)
   }
 }
 
@@ -125,7 +133,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
               {!a.revocada_en && (revoking === a.id
                 ? <div className="inline-revoke">
                   <input placeholder="Motivo de la revocación" value={revokeReason} onChange={event => setRevokeReason(event.target.value)} autoFocus/>
-                  <button type="button" className="secondary-button" onClick={() => void revoke(a.id)}>Confirmar</button>
+                  <button type="button" className="secondary-button" disabled={confirming} onClick={() => void revoke(a.id)}>Confirmar</button>
                   <button type="button" className="secondary-button" onClick={() => { setRevoking(null); setRevokeReason('') }}>Cancelar</button>
                 </div>
                 : <button type="button" className="secondary-button" onClick={() => { setRevoking(a.id); setRevokeReason('') }}><Ban size={13}/> Revocar</button>)}
@@ -151,7 +159,7 @@ export function UserRolesModal({ token, user, onClose, onChanged }: Props) {
       </label>}
       {scope === 'PROYECTO' && <label className="field">ID del proyecto (opcional)
         <input type="number" min={1} value={proyecto} onChange={event => setProyecto(event.target.value)}/>
-        <small>Puede quedar vacío hasta que exista el módulo de proyectos.</small>
+        <small>Opcional: limita el rol a ese proyecto.</small>
       </label>}
 
       <label className="field">Vigente desde (opcional)

@@ -22,7 +22,8 @@ export function AppShell() {
   const title = items.find(item => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))?.label ?? 'Sistema IINSAD'
 
   async function leave() {
-    try { await signOut() } catch { /* la sesión local se borra incluso si falla el servidor */ }
+    try { await signOut() }
+    catch (error) { console.warn('No se pudo revocar la sesión en el servidor; se cerró localmente.', error) }
     navigate('/login', { replace: true })
   }
 

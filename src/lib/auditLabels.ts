@@ -22,6 +22,21 @@ export const ACTION_LABELS: Record<string, string> = {
   'parametro.editar': 'Editar parámetro',
   'parametro.eliminar': 'Eliminar parámetro',
   'auditoria.exportar': 'Exportar auditoría',
+  'usuario.reactivar': 'Reactivar usuario',
+  'proyecto.crear': 'Registrar proyecto',
+  'participacion.crear': 'Agregar participación',
+  'participacion.cerrar': 'Cerrar participación',
+  'participacion.anular': 'Anular participación',
+  'propuesta.crear_version': 'Abrir corrección',
+  'propuesta.editar': 'Editar borrador',
+  'propuesta.eliminar_borrador': 'Descartar borrador',
+  'propuesta.agregar_integrante': 'Agregar integrante',
+  'propuesta.quitar_integrante': 'Quitar integrante',
+  'propuesta.cambiar_funcion': 'Cambiar función',
+  'propuesta.enviar': 'Enviar a revisión',
+  'admin.crear': 'Crear desde el panel',
+  'admin.editar': 'Editar desde el panel',
+  'admin.eliminar': 'Eliminar desde el panel',
 }
 
 export const ENTITY_LABELS: Record<string, string> = {
@@ -32,6 +47,9 @@ export const ENTITY_LABELS: Record<string, string> = {
   Linea: 'Línea de investigación',
   Parametro: 'Parámetro',
   Auditoria: 'Auditoría',
+  Proyecto: 'Proyecto',
+  Participacion: 'Participación',
+  VersionPropuesta: 'Versión de propuesta',
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -42,7 +60,18 @@ const FIELD_LABELS: Record<string, string> = {
   usuario_id: 'Usuario (ID)', rol: 'Rol', ambito: 'Ámbito', unidad_id: 'Unidad (ID)', proyecto_id: 'Proyecto (ID)',
   vigente_desde: 'Vigente desde', vigente_hasta: 'Vigente hasta', revocada_en: 'Revocada en',
   codigo: 'Código', nombre: 'Nombre', activa: 'Activa', clave: 'Clave', titulo: 'Título', valor: 'Valor', estado: 'Estado',
+  pregunta_pendiente: 'Pregunta pendiente', aprobada_por_persona_id: 'Aprobada por (ID)', aprobada_en: 'Aprobada en',
+  formato: 'Formato', registros: 'Registros', filtros: 'Filtros', persona_id: 'Persona (ID)', funcion: 'Función',
+  numero_version: 'N.º de versión', version_anterior_id: 'Versión anterior (ID)', equipo: 'Equipo', enviada_en: 'Enviada en',
+  participacion_id: 'Participación (ID)', anulado_en: 'Anulada en', origen: 'Origen', estado_ejecucion: 'Estado de ejecución',
+  lineas: 'Líneas', investigador_principal_id: 'Investigador principal (ID)', resumen: 'Resumen', justificacion: 'Justificación',
+  objetivo_general: 'Objetivo general', objetivos_especificos: 'Objetivos específicos', metodologia: 'Metodología',
+  resultados_esperados: 'Resultados esperados', fecha_inicio_prevista: 'Inicio previsto', fecha_fin_prevista: 'Fin previsto',
+  campos_modificados: 'Campos modificados',
 }
+
+// Todas las fechas se muestran en la hora de Bolivia, igual que en las exportaciones.
+const ZONE = 'America/La_Paz'
 
 export const actionLabel = (code: string) => ACTION_LABELS[code] ?? code
 export const entityLabel = (type: string) => ENTITY_LABELS[type] ?? type
@@ -60,7 +89,7 @@ export function formatValue(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'Sí' : 'No'
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
     const date = new Date(value)
-    if (!Number.isNaN(date.getTime())) return date.toLocaleString('es-BO')
+    if (!Number.isNaN(date.getTime())) return date.toLocaleString('es-BO', { timeZone: ZONE })
   }
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
@@ -68,7 +97,7 @@ export function formatValue(value: unknown): string {
 
 export function formatDateTime(iso: string): string {
   const date = new Date(iso)
-  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'medium' })
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'medium', timeZone: ZONE })
 }
 
 function flatten(value: Record<string, unknown> | null, prefix = ''): Record<string, unknown> {

@@ -1,4 +1,4 @@
-import { apiRequest } from './http'
+import { apiRequest, fetchAllPages } from './http'
 import type { RoleCode } from '../config/roles'
 
 export type Ambito = 'GLOBAL' | 'UNIDAD' | 'PROYECTO'
@@ -88,10 +88,8 @@ export function getUser(token: string, id: number) {
   return apiRequest<UserRow>(`/usuarios/usuarios/${id}/`, {}, token)
 }
 
-export function listUnits(token: string) {
-  // Selector de unidades para asignar roles: pide una página grande para que no se corte en 20.
-  return apiRequest<Page<UnitOption>>('/usuarios/unidades/?page_size=100', {}, token)
-}
+/** Todas las unidades, para el selector de roles. */
+export const listUnits = (token: string) => fetchAllPages<UnitOption>('/usuarios/unidades/', {}, token)
 
 export type CreateAssignmentInput = {
   usuario: number

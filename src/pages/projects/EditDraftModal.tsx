@@ -32,9 +32,13 @@ export function EditDraftModal({ token, projectId, version, onClose, onSaved }: 
     setErrors(found)
     setFormError('')
     if (hasErrors(found)) return
+    // Solo se envía lo modificado: un formulario antiguo no revierte cambios hechos en otro lugar.
+    const changed = (Object.keys(content) as Array<keyof ContentForm>).filter(key => content[key] !== initial[key])
+    if (changed.length === 0) { onClose(); return }
     setSaving(true)
     try {
-      await updateDraft(token, projectId, version.id, contentPayload(content))
+      const payload = contentPayload(content)
+      await updateDraft(token, projectId, version.id, Object.fromEntries(changed.map(key => [key, payload[key]])))
       onSaved()
     } catch (failure) {
       if (failure instanceof ApiError && Object.keys(failure.fields).length > 0) setErrors(joinFieldErrors(failure.fields))

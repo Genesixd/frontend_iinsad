@@ -47,6 +47,7 @@ export function describeEvent(record: AuditRecord): string {
     case 'usuario.crear': return sentence(`creó la cuenta ${text(after.email) || `#${id}`}`)
     case 'usuario.editar': return sentence(`editó la cuenta de usuario #${id}${after.password_cambiada ? ' (incluye cambio de contraseña)' : ''}`)
     case 'usuario.desactivar': return sentence(`desactivó la cuenta de usuario #${id} y cerró sus sesiones`)
+    case 'usuario.reactivar': return sentence(`reactivó la cuenta de usuario #${id}`)
     case 'usuario.cambiar_password': return sentence('cambió su contraseña y se cerraron todas sus sesiones')
     case 'asignacion.crear': {
       const scope = text(after.ambito).toLowerCase()

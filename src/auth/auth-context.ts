@@ -12,6 +12,8 @@ export type Session = {
 
 export type AuthContextValue = {
   session: Session | null
+  /** La última sesión se cerró porque el servidor dejó de aceptarla. */
+  expired?: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInDemo: (role: RoleCode) => void
   setActiveRole: (role: RoleCode) => void
